@@ -3,7 +3,8 @@ from ..models import request, user
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
 from ..utils.db import get_db
-from ..config import settings
+from datetime import datetime
+
 
 router = APIRouter(
     prefix="/request",
@@ -46,6 +47,7 @@ async def push_request(
         
         if previous_record:
             previous_record.is_active = True
+            previous_record.created_at = datetime.now()
         else:
             new_record = user.UserRequests(
                 user_id = current_user.user_id,
