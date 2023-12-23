@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     database_name: str
     postgres_user: str
     development_mode: str
+    admin_pwd: str
 
 
     class Config:
