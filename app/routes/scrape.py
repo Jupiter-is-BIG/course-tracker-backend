@@ -8,6 +8,7 @@ import requests
 from bs4 import BeautifulSoup
 import time
 from fastapi import BackgroundTasks
+import logging
 
 router = APIRouter(
     prefix="/scrape",
@@ -32,13 +33,13 @@ async def run_engine(pwd: str, background_tasks: BackgroundTasks, db: Session = 
     }
 
 def scrape_task(requested_data, db):
-    print("Background task started")
+    logging.info("Background task started")
     result = db.query(admin.Admin).filter(admin.Admin.search_active == True).first()
     while result:   
         run_user(requested_data, db)
         time.sleep(result.frequency)
         result = db.query(admin.Admin).filter(admin.Admin.search_active == True).first()
-    print("Background task ended")
+    logging.info("Background task Ended")
 
 
 def sendMessage(token, channel_id, message):
