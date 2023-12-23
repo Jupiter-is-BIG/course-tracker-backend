@@ -1,7 +1,7 @@
 from fastapi import Depends, FastAPI
 from .utils.db import get_db
 from sqlalchemy.orm import Session
-from .routes import script, scrape, request
+from .routes import script, scrape, request, user
 import logging
 
 app = FastAPI()
@@ -9,7 +9,9 @@ logging.basicConfig(level=logging.INFO)
 
 app.include_router(script.router)  
 app.include_router(scrape.router)
-app.include_router(request.router)     
+app.include_router(request.router)   
+app.include_router(user.router)   
+
 
 
 @app.get("/")

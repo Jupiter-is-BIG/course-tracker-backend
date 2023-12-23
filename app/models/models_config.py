@@ -1,4 +1,4 @@
-from .user_model import User
+from .user import User
 from .admin import Admin
 from .request import Request
 from ..utils.db import Base

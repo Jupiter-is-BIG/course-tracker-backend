@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     postgres_user: str
     development_mode: str
     admin_pwd: str
+    discord_bot_token: str
 
 
     class Config:
