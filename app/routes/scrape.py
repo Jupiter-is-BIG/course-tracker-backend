@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 import time
 from fastapi import BackgroundTasks
 import logging
+import urllib.request
 
 router = APIRouter(
     prefix="/scrape",
@@ -35,9 +36,13 @@ def scrape_task(db):
     logging.info("Background task started")
     result = db.query(admin.Admin).filter(admin.Admin.search_active == True).first()
     while result:
+        wait_time = (result.frequency)/2
         requested_data = db.query(request.Request).filter(request.Request.is_active == True).all()
         run_user(requested_data, db)
-        time.sleep(result.frequency)
+        urllib.request.urlopen("https://course-tracker-backend.onrender.com/").read()
+        time.sleep(wait_time)
+        urllib.request.urlopen("https://course-tracker-backend.onrender.com/").read()
+        time.sleep(wait_time)
         result = db.query(admin.Admin).filter(admin.Admin.search_active == True).first()
     logging.info("Background task Ended")
 
