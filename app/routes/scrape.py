@@ -25,17 +25,17 @@ async def run_engine(pwd: str, background_tasks: BackgroundTasks, db: Session = 
             detail="Access denied",
         )
     
-    requested_data = db.query(request.Request).filter(request.Request.is_active == True).all()
-    background_tasks.add_task(scrape_task, requested_data, db)
+    background_tasks.add_task(scrape_task, db)
     
     return {
         "detail": "Scraping task has been scheduled. It will run in the background.",
     }
 
-def scrape_task(requested_data, db):
+def scrape_task(db):
     logging.info("Background task started")
     result = db.query(admin.Admin).filter(admin.Admin.search_active == True).first()
-    while result:   
+    while result:
+        requested_data = db.query(request.Request).filter(request.Request.is_active == True).all()
         run_user(requested_data, db)
         time.sleep(result.frequency)
         result = db.query(admin.Admin).filter(admin.Admin.search_active == True).first()
