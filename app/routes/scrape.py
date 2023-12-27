@@ -96,5 +96,13 @@ def run_user(tracking: list[request.Request], db):
 
             course.is_active = False
             db.commit()
+            continue
+
+        interested_users = db.query(user.UserRequests).filter(and_(user.UserRequests.request_id == course.request_id,user.UserRequests.is_active == True)).first()
+
+        if not interested_users:
+            course.is_active = False
+            db.commit()
+            continue
 
 
