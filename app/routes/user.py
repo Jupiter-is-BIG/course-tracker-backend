@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from ..models import user, request
-from sqlalchemy.orm import Session, joinedload, aliased
+from sqlalchemy.orm import Session
 from sqlalchemy import or_, and_
 from ..utils.db import get_db
 from ..config import settings
 from ..schemas import request_schema
+from hashlib import sha256
+
 
 router = APIRouter(
     prefix="/user",
@@ -24,7 +26,7 @@ async def create_user(user_id: str, user_name: str, password: str, db: Session =
     new_user = user.User(
         user_id = user_id,
         user_name = user_name,
-        password = password
+        password = sha256(password.encode('utf-8')).hexdigest()
     )
 
     db.add(new_user)
@@ -35,6 +37,7 @@ async def create_user(user_id: str, user_name: str, password: str, db: Session =
 @router.get("/login", status_code=200)
 async def login(user_name: str, password: str, db: Session = Depends(get_db)):
     """ login route for user """
+    password = sha256(password.encode('utf-8')).hexdigest()
     auth_search = db.query(user.User).filter(and_(user.User.user_name == user_name, user.User.password == password)).first()
     if not auth_search:
         raise HTTPException(
@@ -48,6 +51,7 @@ async def login(user_name: str, password: str, db: Session = Depends(get_db)):
 @router.get("/subscriptions", status_code=200, response_model=list[request_schema.Subscription])
 async def get_my_subscriptions(user_name: str, password: str, db: Session = Depends(get_db)):
     """ fetch all subscriptions of a user """
+    password = sha256(password.encode('utf-8')).hexdigest()
     auth_search = db.query(user.User).filter(and_(user.User.user_name == user_name, user.User.password == password)).first()
     if not auth_search:
         raise HTTPException(
@@ -65,3 +69,26 @@ async def get_my_subscriptions(user_name: str, password: str, db: Session = Depe
     )
   
     return all_subs
+
+@router.delete("subscriptions", status_code=200)
+async def delete_subscription(user_name: str, password: str, request_id: str, db: Session = Depends(get_db)):
+    """ delete my subscription """
+    password = sha256(password.encode('utf-8')).hexdigest()
+    cur_user = db.query(user.User).filter(and_(user.User.user_name == user_name, user.User.password == password)).first()
+    if not cur_user:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Wrong password and username combination"
+        )
+    
+    request_verification = db.query(user.UserRequests).filter(and_(user.UserRequests.user_id == cur_user.user_id, user.UserRequests.request_id == request_id)).first()
+    if not request_verification:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="You are linked to any such course"
+        )
+    
+    db.delete(request_verification)
+    db.commit()
+
+    return {"message" : "Deleted course link successfully"}

@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_
 from ..utils.db import get_db
 from datetime import datetime
+from hashlib import sha256
 
 
 router = APIRouter(
@@ -22,6 +23,7 @@ async def push_request(
     db: Session = Depends(get_db)
 ):
     """ Pushes new tracking requests """
+    password = sha256(password.encode('utf-8')).hexdigest()
     current_user = db.query(user.User).filter(user.User.user_name == user_name).first()
     if (not current_user) or current_user.password != password:
         raise HTTPException(
