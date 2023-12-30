@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 from .scrape import sendMessage, createDmChannel
 from ..config import settings
 import requests
+import logging
 
 
 router = APIRouter(
@@ -54,7 +55,7 @@ async def push_request(
             detail="Wrong format",
         )
     
-    if (len(subject) != 4 or len(code) != 3 or len(section) != 3):
+    if (len(subject) != 4 or len(code) != 3 or len(section) != 3 or len(campus) != 4):
         raise HTTPException(
             status_code=status.HTTP_406_NOT_ACCEPTABLE,
             detail="Wrong format",
@@ -64,6 +65,7 @@ async def push_request(
     headers={'User-Agent':'Mozilla/5.0 (Macintosh; PPC Mac OS X 10_8_2) AppleWebKit/531.2 (KHTML, like Gecko) Chrome/26.0.869.0 Safari/531.2'}
     try:
         request = await requests.get(url, headers=headers)
+        logging.info(request.text)
         webpage = BeautifulSoup(request.text, features="lxml")
         webpage.find('table',class_ = "'table").findAll('strong')[1].text
     except:
@@ -91,11 +93,11 @@ async def push_request(
         
         dive.is_active = True
         db.commit()
-
+        
         message_confirmation = f"Hey {user_name}! We are now tracking {subject} {code} {section} of {campus} for you! :saluting_face:\n We will send you a DM on discord when we see a seat available :)\n\n Please note that we look for seat availablity every 20 minutes to avoid any load on UBC servers, respecting [UBC Terms of Use Section F](https://www.ubc.ca/site/legal.html)."
         channel_id = createDmChannel(settings.discord_bot_token, current_user.user_id)
         await sendMessage(settings.discord_bot_token, channel_id, message_confirmation)
-        
+
         return {"message": f"Resquest for {subject} {code} {section} on {campus} campus has been registered successfully"}
     
         
