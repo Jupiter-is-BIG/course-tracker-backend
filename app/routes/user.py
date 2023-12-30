@@ -53,7 +53,7 @@ async def create_user(user_id: str, user_name: str, password: str, db: Session =
 
     message_confirmation = f"Hey {user_name}! Thanks for registering your account on course tracker :D You can now start tracking courses!"
     channel_id = createDmChannel(settings.discord_bot_token, user_id)
-    await sendMessage(settings.discord_bot_token, channel_id, message_confirmation)
+    sendMessage(settings.discord_bot_token, channel_id, message_confirmation)
 
     return {"message": "User registered successfully"}
 
