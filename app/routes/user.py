@@ -29,13 +29,19 @@ async def create_user(user_id: str, user_name: str, password: str, db: Session =
         "User-Agent": "myBotThing (http://some.url, v0.1)",
     }
     url = f"https://discordapp.com/api/users/{user_id}"
-    response = await requests.get(url, headers=headers)
-    if response.status_code != 200:
+    try:
+        response = await requests.get(url, headers=headers)    
+        if response.status_code != 200:
+            raise HTTPException(
+                status_code=status.HTTP_406_NOT_ACCEPTABLE,
+                detail="Wrong Discord User Id",
+            )
+    except:
         raise HTTPException(
-            status_code=status.HTTP_406_NOT_ACCEPTABLE,
-            detail="Wrong Discord User Id",
-        )
-
+                status_code=status.HTTP_406_NOT_ACCEPTABLE,
+                detail="Wrong Discord User Id",
+            )
+    
     new_user = user.User(
         user_id = user_id,
         user_name = user_name,

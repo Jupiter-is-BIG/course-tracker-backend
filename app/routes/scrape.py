@@ -48,20 +48,27 @@ async def scrape_task(db):
 
 
 async def sendMessage(token, channel_id, message):
-    url = 'https://discord.com/api/v8/channels/{}/messages'.format(channel_id)
-    data = {"content": message}
-    header = {"authorization": f"Bot {token}"}
- 
-    requests.post(url, data=data, headers=header)
+    try:
+        url = 'https://discord.com/api/v8/channels/{}/messages'.format(channel_id)
+        data = {"content": message}
+        header = {"authorization": f"Bot {token}"}
+    
+        requests.post(url, data=data, headers=header)
+    except:
+        logging.info(f"Discord DM Sedning Failed for {channel_id}")
  
 async def createDmChannel(token, user_id):
-    data = {"recipient_id": user_id}
-    headers = {"authorization": f"Bot {token}"}
-    r = requests.post(f'https://discord.com/api/v9/users/@me/channels', json=data, headers=headers)
+    try:
+        data = {"recipient_id": user_id}
+        headers = {"authorization": f"Bot {token}"}
+        r = requests.post(f'https://discord.com/api/v9/users/@me/channels', json=data, headers=headers)
+    
+        channel_id = r.json()['id']
  
-    channel_id = r.json()['id']
- 
-    return channel_id
+        return channel_id
+    except:
+        logging.info(f"Discord DM Creating Failed for {user_id}")
+        return 0
 
 async def num_seats(subject: str, code: str, section: str, campus: str):
     url = f'https://courses.students.ubc.ca/cs/courseschedule?tname=subj-section&course={code}&section={section}&campuscd={campus}&dept={subject}&pname=subjarea'
