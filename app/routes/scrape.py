@@ -38,7 +38,7 @@ async def scrape_task(db):
     while result:
         wait_time = (result.frequency)/2
         requested_data = db.query(request.Request).filter(request.Request.is_active == True).all()
-        run_user(requested_data, db)
+        await run_user(requested_data, db)
         urllib.request.urlopen("https://course-tracker-backend.onrender.com/").read()
         time.sleep(wait_time)
         urllib.request.urlopen("https://course-tracker-backend.onrender.com/").read()
@@ -83,7 +83,7 @@ async def num_seats(subject: str, code: str, section: str, campus: str):
 async def run_user(tracking: list[request.Request], db):
     logging.info("Tracking Now...")
     for course in tracking:
-        num = num_seats(course.subject,course.code,course.section,course.campus)
+        num = await num_seats(course.subject,course.code,course.section,course.campus)
         if (num) != "0":
             interested_users = db.query(user.UserRequests).filter(and_(user.UserRequests.request_id == course.request_id,user.UserRequests.is_active == True)).all()
 
