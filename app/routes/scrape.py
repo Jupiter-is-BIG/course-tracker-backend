@@ -32,13 +32,13 @@ async def run_engine(pwd: str, background_tasks: BackgroundTasks, db: Session = 
         "detail": "Scraping task has been scheduled. It will run in the background.",
     }
 
-async def scrape_task(db):
+def scrape_task(db):
     logging.info("Background task started")
     result = db.query(admin.Admin).filter(admin.Admin.search_active == True).first()
     while result:
         wait_time = (result.frequency)/2
         requested_data = db.query(request.Request).filter(request.Request.is_active == True).all()
-        await run_user(requested_data, db)
+        run_user(requested_data, db)
         urllib.request.urlopen("https://course-tracker-backend.onrender.com/").read()
         time.sleep(wait_time)
         urllib.request.urlopen("https://course-tracker-backend.onrender.com/").read()
@@ -47,7 +47,7 @@ async def scrape_task(db):
     logging.info("Background task Ended")
 
 
-async def sendMessage(token, channel_id, message):
+def sendMessage(token, channel_id, message):
     try:
         url = 'https://discord.com/api/v8/channels/{}/messages'.format(channel_id)
         data = {"content": message}
@@ -57,7 +57,7 @@ async def sendMessage(token, channel_id, message):
     except:
         logging.info(f"Discord DM Sedning Failed for {channel_id}")
  
-async def createDmChannel(token, user_id):
+def createDmChannel(token, user_id):
     try:
         data = {"recipient_id": user_id}
         headers = {"authorization": f"Bot {token}"}
@@ -70,7 +70,7 @@ async def createDmChannel(token, user_id):
         logging.info(f"Discord DM Creating Failed for {user_id}")
         return 0
 
-async def num_seats(subject: str, code: str, section: str, campus: str):
+def num_seats(subject: str, code: str, section: str, campus: str):
     url = f'https://courses.students.ubc.ca/cs/courseschedule?tname=subj-section&course={code}&section={section}&campuscd={campus}&dept={subject}&pname=subjarea'
     headers={'User-Agent':'Mozilla/5.0 (Macintosh; PPC Mac OS X 10_8_2) AppleWebKit/531.2 (KHTML, like Gecko) Chrome/26.0.869.0 Safari/531.2'}
     try:
@@ -80,10 +80,10 @@ async def num_seats(subject: str, code: str, section: str, campus: str):
     except:
         return "0"
 
-async def run_user(tracking: list[request.Request], db):
+def run_user(tracking: list[request.Request], db):
     logging.info("Tracking Now...")
     for course in tracking:
-        num = await num_seats(course.subject,course.code,course.section,course.campus)
+        num = num_seats(course.subject,course.code,course.section,course.campus)
         if (num) != "0":
             interested_users = db.query(user.UserRequests).filter(and_(user.UserRequests.request_id == course.request_id,user.UserRequests.is_active == True)).all()
 
@@ -97,8 +97,8 @@ async def run_user(tracking: list[request.Request], db):
             for discord_user in interested_users:
                 discord_user.is_active = False
                 try:
-                    channel_id = await createDmChannel(settings.discord_bot_token, discord_user.user_id)
-                    await sendMessage(settings.discord_bot_token, channel_id, message)
+                    channel_id = createDmChannel(settings.discord_bot_token, discord_user.user_id)
+                    sendMessage(settings.discord_bot_token, channel_id, message)
                 except:
                     pass
 
