@@ -97,8 +97,8 @@ async def run_user(tracking: list[request.Request], db):
             for discord_user in interested_users:
                 discord_user.is_active = False
                 try:
-                    channel_id = createDmChannel(settings.discord_bot_token, discord_user.user_id)
-                    sendMessage(settings.discord_bot_token, channel_id, message)
+                    channel_id = await createDmChannel(settings.discord_bot_token, discord_user.user_id)
+                    await sendMessage(settings.discord_bot_token, channel_id, message)
                 except:
                     pass
 
