@@ -38,7 +38,7 @@ async def push_request(
     
     num_of_existsing_requests = (
         db.query(user.UserRequests)
-        .filter(user.UserRequests.user_id == current_user.user_id)
+        .filter(and_(user.UserRequests.user_id == current_user.user_id, user.UserRequests.is_active == True))
         .count()
     )
 
