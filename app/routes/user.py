@@ -6,7 +6,8 @@ from ..utils.db import get_db
 from ..config import settings
 from ..schemas import request_schema
 from hashlib import sha256
-
+import requests
+from .scrape import sendMessage, createDmChannel
 
 router = APIRouter(
     prefix="/user",
@@ -22,7 +23,19 @@ async def create_user(user_id: str, user_name: str, password: str, db: Session =
             status_code=status.HTTP_409_CONFLICT,
             detail="User already exists with this username or discord",
         )
-    
+
+    headers = {
+        "Authorization": f"Bot {settings.discord_bot_token}",
+        "User-Agent": "myBotThing (http://some.url, v0.1)",
+    }
+    url = f"https://discordapp.com/api/users/{user_id}"
+    response = await requests.get(url, headers=headers)
+    if response.status_code != 200:
+        raise HTTPException(
+            status_code=status.HTTP_406_NOT_ACCEPTABLE,
+            detail="Wrong Discord User Id",
+        )
+
     new_user = user.User(
         user_id = user_id,
         user_name = user_name,
@@ -31,6 +44,10 @@ async def create_user(user_id: str, user_name: str, password: str, db: Session =
 
     db.add(new_user)
     db.commit()
+
+    message_confirmation = f"Hey {user_name}! Thanks for registering your account on course tracker :D You can now start tracking courses!"
+    channel_id = createDmChannel(settings.discord_bot_token, user_id)
+    await sendMessage(settings.discord_bot_token, channel_id, message_confirmation)
 
     return {"message": "User registered successfully"}
 

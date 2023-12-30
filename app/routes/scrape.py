@@ -32,7 +32,7 @@ async def run_engine(pwd: str, background_tasks: BackgroundTasks, db: Session = 
         "detail": "Scraping task has been scheduled. It will run in the background.",
     }
 
-def scrape_task(db):
+async def scrape_task(db):
     logging.info("Background task started")
     result = db.query(admin.Admin).filter(admin.Admin.search_active == True).first()
     while result:
@@ -47,14 +47,14 @@ def scrape_task(db):
     logging.info("Background task Ended")
 
 
-def sendMessage(token, channel_id, message):
+async def sendMessage(token, channel_id, message):
     url = 'https://discord.com/api/v8/channels/{}/messages'.format(channel_id)
     data = {"content": message}
     header = {"authorization": f"Bot {token}"}
  
     requests.post(url, data=data, headers=header)
  
-def createDmChannel(token, user_id):
+async def createDmChannel(token, user_id):
     data = {"recipient_id": user_id}
     headers = {"authorization": f"Bot {token}"}
     r = requests.post(f'https://discord.com/api/v9/users/@me/channels', json=data, headers=headers)
@@ -63,17 +63,18 @@ def createDmChannel(token, user_id):
  
     return channel_id
 
-def num_seats(subject: str, code: str, section: str, campus: str):
+async def num_seats(subject: str, code: str, section: str, campus: str):
     url = f'https://courses.students.ubc.ca/cs/courseschedule?tname=subj-section&course={code}&section={section}&campuscd={campus}&dept={subject}&pname=subjarea'
     headers={'User-Agent':'Mozilla/5.0 (Macintosh; PPC Mac OS X 10_8_2) AppleWebKit/531.2 (KHTML, like Gecko) Chrome/26.0.869.0 Safari/531.2'}
     try:
-        request = requests.get(url, headers=headers)
+        request = await requests.get(url, headers=headers)
         webpage = BeautifulSoup(request.text, features="lxml")
         return webpage.find('table',class_ = "'table").findAll('strong')[1].text
     except:
         return "0"
 
-def run_user(tracking: list[request.Request], db):
+async def run_user(tracking: list[request.Request], db):
+    logging.info("Tracking Now...")
     for course in tracking:
         num = num_seats(course.subject,course.code,course.section,course.campus)
         if (num) != "0":
@@ -90,7 +91,7 @@ def run_user(tracking: list[request.Request], db):
                 discord_user.is_active = False
                 try:
                     channel_id = createDmChannel(settings.discord_bot_token, discord_user.user_id)
-                    sendMessage(settings.discord_bot_token, channel_id, message)
+                    await sendMessage(settings.discord_bot_token, channel_id, message)
                 except:
                     pass
 

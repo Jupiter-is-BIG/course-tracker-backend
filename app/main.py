@@ -2,11 +2,25 @@ from fastapi import Depends, FastAPI
 from .utils.db import get_db
 from sqlalchemy.orm import Session
 from .routes import script, scrape, request, user
-from .models import admin
+from fastapi.middleware.cors import CORSMiddleware
 import logging
 
 app = FastAPI()
 logging.basicConfig(level=logging.INFO)
+
+origins = [
+    "https://course-tracker-backend.onrender.com",
+    "https://course-tracker-frontend-kappa.vercel.app/",
+    "http://localhost",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(script.router)  
 app.include_router(scrape.router)
