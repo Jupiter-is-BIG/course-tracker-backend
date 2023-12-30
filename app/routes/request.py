@@ -64,9 +64,8 @@ async def push_request(
     url = f'https://courses.students.ubc.ca/cs/courseschedule?tname=subj-section&course={code}&section={section}&campuscd={campus}&dept={subject}&pname=subjarea'
     headers={'User-Agent':'Mozilla/5.0 (Macintosh; PPC Mac OS X 10_8_2) AppleWebKit/531.2 (KHTML, like Gecko) Chrome/26.0.869.0 Safari/531.2'}
     try:
-        request = requests.get(url, headers=headers)
-        logging.info(request.text)
-        webpage = BeautifulSoup(request.text, features="lxml")
+        request_server = requests.get(url, headers=headers)
+        webpage = BeautifulSoup(request_server.text, features="lxml")
         webpage.find('table',class_ = "'table").findAll('strong')[1].text
     except:
         raise HTTPException(
