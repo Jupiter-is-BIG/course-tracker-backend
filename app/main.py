@@ -9,8 +9,8 @@ app = FastAPI()
 logging.basicConfig(level=logging.INFO)
 
 origins = [
+    "https://course-tracker-frontend-kappa.vercel.app",
     "https://course-tracker-backend.onrender.com",
-    "https://course-tracker-frontend-kappa.vercel.app/",
     "http://localhost",
 ]
 
