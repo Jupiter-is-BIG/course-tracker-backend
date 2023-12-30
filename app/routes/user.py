@@ -30,7 +30,7 @@ async def create_user(user_id: str, user_name: str, password: str, db: Session =
     }
     url = f"https://discordapp.com/api/users/{user_id}"
     try:
-        response = await requests.get(url, headers=headers)    
+        response = requests.get(url, headers=headers)    
         if response.status_code != 200:
             raise HTTPException(
                 status_code=status.HTTP_406_NOT_ACCEPTABLE,
@@ -53,7 +53,7 @@ async def create_user(user_id: str, user_name: str, password: str, db: Session =
 
     message_confirmation = f"Hey {user_name}! Thanks for registering your account on course tracker :D You can now start tracking courses!"
     channel_id = createDmChannel(settings.discord_bot_token, user_id)
-    await sendMessage(settings.discord_bot_token, channel_id, message_confirmation)
+    sendMessage(settings.discord_bot_token, channel_id, message_confirmation)
 
     return {"message": "User registered successfully"}
 

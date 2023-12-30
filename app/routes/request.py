@@ -64,7 +64,7 @@ async def push_request(
     url = f'https://courses.students.ubc.ca/cs/courseschedule?tname=subj-section&course={code}&section={section}&campuscd={campus}&dept={subject}&pname=subjarea'
     headers={'User-Agent':'Mozilla/5.0 (Macintosh; PPC Mac OS X 10_8_2) AppleWebKit/531.2 (KHTML, like Gecko) Chrome/26.0.869.0 Safari/531.2'}
     try:
-        request = await requests.get(url, headers=headers)
+        request = requests.get(url, headers=headers)
         logging.info(request.text)
         webpage = BeautifulSoup(request.text, features="lxml")
         webpage.find('table',class_ = "'table").findAll('strong')[1].text
@@ -96,7 +96,7 @@ async def push_request(
         
         message_confirmation = f"Hey {user_name}! We are now tracking {subject} {code} {section} of {campus} for you! :saluting_face:\n We will send you a DM on discord when we see a seat available :)\n\n Please note that we look for seat availablity every 20 minutes to avoid any load on UBC servers, respecting [UBC Terms of Use Section F](https://www.ubc.ca/site/legal.html)."
         channel_id = createDmChannel(settings.discord_bot_token, current_user.user_id)
-        await sendMessage(settings.discord_bot_token, channel_id, message_confirmation)
+        sendMessage(settings.discord_bot_token, channel_id, message_confirmation)
 
         return {"message": f"Resquest for {subject} {code} {section} on {campus} campus has been registered successfully"}
     
@@ -121,7 +121,7 @@ async def push_request(
 
     message_confirmation = f"Hey {user_name}! We are now tracking {subject} {code} {section} of {campus} for you! :saluting_face:\n We will send you a DM on discord when we see a seat available :)\n\n Please note that we look for seat availablity every 20 minutes to avoid any load on UBC servers, respecting [UBC Terms of Use Section F](https://www.ubc.ca/site/legal.html)."
     channel_id = createDmChannel(settings.discord_bot_token, current_user.user_id)
-    await sendMessage(settings.discord_bot_token, channel_id, message_confirmation)
+    sendMessage(settings.discord_bot_token, channel_id, message_confirmation)
 
     return {"message": f"Resquest for {subject} {code} {section} on {campus} campus has been registered successfully"}
 

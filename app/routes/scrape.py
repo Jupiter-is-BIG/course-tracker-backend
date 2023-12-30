@@ -74,7 +74,7 @@ async def num_seats(subject: str, code: str, section: str, campus: str):
     url = f'https://courses.students.ubc.ca/cs/courseschedule?tname=subj-section&course={code}&section={section}&campuscd={campus}&dept={subject}&pname=subjarea'
     headers={'User-Agent':'Mozilla/5.0 (Macintosh; PPC Mac OS X 10_8_2) AppleWebKit/531.2 (KHTML, like Gecko) Chrome/26.0.869.0 Safari/531.2'}
     try:
-        request = await requests.get(url, headers=headers)
+        request = requests.get(url, headers=headers)
         webpage = BeautifulSoup(request.text, features="lxml")
         return webpage.find('table',class_ = "'table").findAll('strong')[1].text
     except:
@@ -98,7 +98,7 @@ async def run_user(tracking: list[request.Request], db):
                 discord_user.is_active = False
                 try:
                     channel_id = createDmChannel(settings.discord_bot_token, discord_user.user_id)
-                    await sendMessage(settings.discord_bot_token, channel_id, message)
+                    sendMessage(settings.discord_bot_token, channel_id, message)
                 except:
                     pass
 
