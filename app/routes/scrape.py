@@ -1,15 +1,17 @@
-from fastapi import APIRouter, Depends, HTTPException, Response, status
-from ..models import admin, request, user
-from sqlalchemy.orm import Session
-from sqlalchemy import and_
-from ..utils.db import get_db
-from ..config import settings
+import logging
+import time
+import urllib.request
+
 import requests
 from bs4 import BeautifulSoup
-import time
-from fastapi import BackgroundTasks
-import logging
-import urllib.request
+from fastapi import (APIRouter, BackgroundTasks, Depends, HTTPException,
+                     Response, status)
+from sqlalchemy import and_
+from sqlalchemy.orm import Session
+
+from ..config import settings
+from ..models import admin, request, user
+from ..utils.db import get_db
 
 router = APIRouter(
     prefix="/scrape",
@@ -82,6 +84,8 @@ def num_seats(subject: str, code: str, section: str, campus: str):
 
 def run_user(tracking: list[request.Request], db):
     logging.info("Tracking Now...")
+    num_users_notified = 0
+    coures_info_text = []
     for course in tracking:
         num = num_seats(course.subject,course.code,course.section,course.campus)
         if (num) != "0":
@@ -91,7 +95,7 @@ def run_user(tracking: list[request.Request], db):
                 course.is_active = False
                 db.commit()
                 continue
-            
+            coures_info_text.append(course.subject + " " + course.code + " " + course.section + " " + course.campus)
             message = f":rocket:  **Attention!!** :rocket:\n\n **{course.subject} {course.code} {course.section}** has **{num} seats available** at the moment.\n You are now being **unsubscribed** for this course.\n If you were *not able to register* in time, please *subscribe again* to keep tracking the availablity."
             
             for discord_user in interested_users:
@@ -99,6 +103,7 @@ def run_user(tracking: list[request.Request], db):
                 try:
                     channel_id = createDmChannel(settings.discord_bot_token, discord_user.user_id)
                     sendMessage(settings.discord_bot_token, channel_id, message)
+                    num_users_notified += 1
                 except:
                     pass
 
@@ -112,5 +117,11 @@ def run_user(tracking: list[request.Request], db):
             course.is_active = False
             db.commit()
             continue
+    num_info = f"Notified a total of {num_users_notified} users"
+    all_course_info = "The following courses were tracked:\n"
+    for i in coures_info_text:
+        all_course_info = all_course_info + i + "\n"
+    logging.info(num_info)
+    logging.info(all_course_info)
 
 
